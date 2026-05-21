@@ -85,6 +85,16 @@ def generate_visuals(frame: pd.DataFrame, feature_names=None, importances=None) 
     fig.savefig(VISUALS_DIR / "review_length_analysis.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
+    fig, axis = plt.subplots(figsize=(9, 5))
+    sns.violinplot(data=frame, x="fake_review", y="review_length", inner="quartile", palette=["#2E86AB", "#D1495B"], ax=axis)
+    sns.stripplot(data=frame.sample(n=min(len(frame), 500), random_state=CONFIG.random_state), x="fake_review", y="review_length", color="black", alpha=0.08, ax=axis)
+    axis.set_title("Advanced Review Length Distribution")
+    axis.set_xlabel("Label")
+    axis.set_ylabel("Token count")
+    fig.tight_layout()
+    fig.savefig(VISUALS_DIR / "review_length_distribution.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
     numeric_columns = ["rating", "verified_purchase", "review_length", "sentiment_score", "suspicious_word_count", "uppercase_word_count", "exclamation_count"]
     fig, axis = plt.subplots(figsize=(9, 7))
     sns.heatmap(frame[numeric_columns].corr(), annot=True, cmap="coolwarm", center=0, ax=axis)
