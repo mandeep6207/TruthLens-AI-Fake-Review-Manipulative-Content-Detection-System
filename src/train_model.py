@@ -148,6 +148,27 @@ def save_probability_confidence_analysis(model, features) -> dict:
     return confidence_summary
 
 
+def save_misclassified_examples(frame: pd.DataFrame, y_true, y_pred, output_path: str) -> int:
+    output_rows = []
+    evaluation_frame = frame.copy().reset_index(drop=True)
+    evaluation_frame["actual_label"] = y_true.reset_index(drop=True).map({0: "Real", 1: "Fake"})
+    evaluation_frame["predicted_label"] = pd.Series(y_pred).reset_index(drop=True).map({0: "Real", 1: "Fake"})
+    misclassified = evaluation_frame[evaluation_frame["actual_label"] != evaluation_frame["predicted_label"]].copy()
+    for _, row in misclassified.head(25).iterrows():
+        output_rows.append(
+            f"- Actual: {row['actual_label']} | Predicted: {row['predicted_label']} | Rating: {row['rating']} | Text: {row['review_text'][:220]}"
+        )
+    report_text = [
+        "# Misclassified Review Examples",
+        "",
+        f"Total misclassifications: {len(misclassified)}",
+        "",
+        *output_rows,
+    ]
+    (REPORTS_DIR / output_path).write_text("\n".join(report_text), encoding="utf-8")
+    return len(misclassified)
+
+
 def run_cross_validation(features, target) -> dict:
     cross_validator = StratifiedKFold(n_splits=5, shuffle=True, random_state=CONFIG.random_state)
     cross_model = LogisticRegression(max_iter=1000, class_weight="balanced", random_state=CONFIG.random_state, C=0.7, solver="liblinear")
@@ -250,6 +271,7 @@ def train_and_evaluate():
     save_classification_report(best_metrics["classification_report"])
     save_confusion_matrix_plot(best_metrics["confusion_matrix"])
     confidence_summary = save_probability_confidence_analysis(best_model, X_test_combined)
+    misclassified_count = save_misclassified_examples(cleaned.iloc[y_test.index], y_test, best_predictions, "misclassified_reviews.md")
 
     rf_model = RandomForestClassifier(
         n_estimators=220,
@@ -275,6 +297,7 @@ def train_and_evaluate():
         "class_balance_check": class_balance,
         "confidence_summary": confidence_summary,
         "cross_validation_summary": cross_validation_summary,
+        "misclassified_count": misclassified_count,
     })
 
     report_lines = [
@@ -292,6 +315,7 @@ def train_and_evaluate():
         f"- Class balance check: {class_balance['balanced']}",
         f"- Average model confidence: {confidence_summary.get('mean_confidence', 0):.3f}",
         f"- Cross-validation weighted F1: {cross_validation_summary['weighted_f1_mean']:.3f} +/- {cross_validation_summary['weighted_f1_std']:.3f}",
+        f"- Misclassified examples: {misclassified_count}",
     ]
     (REPORTS_DIR / "project_report.md").write_text("\n".join(report_lines), encoding="utf-8")
 

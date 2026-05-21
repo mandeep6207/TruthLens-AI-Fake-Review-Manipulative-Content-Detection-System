@@ -24,10 +24,10 @@ def split_dataset(frame: pd.DataFrame):
     target = frame["fake_review"].map({"Real": 0, "Fake": 1})
     splitter = StratifiedShuffleSplit(n_splits=1, test_size=CONFIG.test_size, random_state=CONFIG.random_state)
     train_index, test_index = next(splitter.split(features, target))
-    X_train = features.iloc[train_index].reset_index(drop=True)
-    X_test = features.iloc[test_index].reset_index(drop=True)
-    y_train = target.iloc[train_index].reset_index(drop=True)
-    y_test = target.iloc[test_index].reset_index(drop=True)
+    X_train = features.iloc[train_index].copy()
+    X_test = features.iloc[test_index].copy()
+    y_train = target.iloc[train_index].copy()
+    y_test = target.iloc[test_index].copy()
     return X_train, X_test, y_train, y_test
 
 
