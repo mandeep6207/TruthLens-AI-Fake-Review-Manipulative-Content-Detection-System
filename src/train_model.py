@@ -12,6 +12,7 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import StratifiedKFold, cross_validate
 from wordcloud import WordCloud
 
 from src.evaluate_model import evaluate_predictions, save_classification_report, save_confusion_matrix_plot
@@ -146,6 +147,27 @@ def save_probability_confidence_analysis(model, features) -> dict:
     plt.close(fig)
     return confidence_summary
 
+
+def run_cross_validation(features, target) -> dict:
+    cross_validator = StratifiedKFold(n_splits=5, shuffle=True, random_state=CONFIG.random_state)
+    cross_model = LogisticRegression(max_iter=1000, class_weight="balanced", random_state=CONFIG.random_state, C=0.7, solver="liblinear")
+    scores = cross_validate(
+        cross_model,
+        features,
+        target,
+        cv=cross_validator,
+        scoring={"accuracy": "accuracy", "weighted_f1": "f1_weighted"},
+        n_jobs=-1,
+        return_train_score=False,
+    )
+    summary = {
+        "accuracy_mean": float(np.mean(scores["test_accuracy"])),
+        "accuracy_std": float(np.std(scores["test_accuracy"])),
+        "weighted_f1_mean": float(np.mean(scores["test_weighted_f1"])),
+        "weighted_f1_std": float(np.std(scores["test_weighted_f1"])),
+    }
+    return summary
+
     if feature_names is not None and importances is not None:
         top_indices = np.argsort(importances)[-20:]
         top_features = np.array(feature_names)[top_indices]
@@ -211,6 +233,7 @@ def train_and_evaluate():
 
     best_model_name = max(results, key=lambda key: results[key]["weighted_f1"])
     best_model, best_predictions, best_metrics = trained_models[best_model_name]
+    cross_validation_summary = run_cross_validation(X_train_combined, y_train)
 
     joblib.dump(best_model, MODELS_DIR / "fake_review_detector.pkl")
     joblib.dump(vectorizer, MODELS_DIR / "tfidf_vectorizer.pkl")
@@ -242,6 +265,7 @@ def train_and_evaluate():
         "best_model_report": best_metrics,
         "class_balance_check": class_balance,
         "confidence_summary": confidence_summary,
+        "cross_validation_summary": cross_validation_summary,
     })
 
     report_lines = [
@@ -258,6 +282,7 @@ def train_and_evaluate():
         "- The TF-IDF model captures strong lexical separation between real and fake reviews.",
         f"- Class balance check: {class_balance['balanced']}",
         f"- Average model confidence: {confidence_summary.get('mean_confidence', 0):.3f}",
+        f"- Cross-validation weighted F1: {cross_validation_summary['weighted_f1_mean']:.3f} +/- {cross_validation_summary['weighted_f1_std']:.3f}",
     ]
     (REPORTS_DIR / "project_report.md").write_text("\n".join(report_lines), encoding="utf-8")
 
