@@ -163,14 +163,6 @@ This will generate the dataset, clean it, train models, create plots, and save a
 - Expand the dataset with external review sources
 - Build a lightweight inference API
 
-## License
-
-MIT License
-
-## Author Information
-
-Mandeep Kumar
-
 ## Notebook
 
 Open `notebooks/truthlens_analysis.ipynb` for the narrative data science walkthrough.
