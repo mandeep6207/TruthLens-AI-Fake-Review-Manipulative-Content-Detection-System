@@ -36,10 +36,11 @@ def build_vectorizer() -> TfidfVectorizer:
         max_features=CONFIG.max_features,
         stop_words="english",
         ngram_range=CONFIG.ngram_range,
-        min_df=2,
-        max_df=0.9,
+        min_df=3,
+        max_df=0.88,
         sublinear_tf=True,
         smooth_idf=True,
+        norm="l2",
     )
 
 

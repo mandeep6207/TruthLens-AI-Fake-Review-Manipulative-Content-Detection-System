@@ -19,8 +19,8 @@ NOTEBOOKS_DIR = ROOT / "notebooks"
 class AppConfig:
     random_state: int = 42
     sample_size: int = 4000
-    max_features: int = 2400
-    ngram_range: tuple[int, int] = (1, 2)
+    max_features: int = 2600
+    ngram_range: tuple[int, int] = (1, 3)
     test_size: float = 0.2
 
 
