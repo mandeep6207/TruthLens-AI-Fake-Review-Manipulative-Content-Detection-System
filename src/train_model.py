@@ -169,12 +169,21 @@ def run_cross_validation(features, target) -> dict:
     return summary
 
     if feature_names is not None and importances is not None:
-        top_indices = np.argsort(importances)[-20:]
+        top_indices = np.argsort(importances)[-25:]
         top_features = np.array(feature_names)[top_indices]
         top_values = np.array(importances)[top_indices]
-        fig, axis = plt.subplots(figsize=(10, 7))
-        axis.barh(top_features, top_values, color="#2E86AB")
+        order = np.argsort(top_values)
+        top_features = top_features[order]
+        top_values = top_values[order]
+        fig, axis = plt.subplots(figsize=(11, 8))
+        bars = axis.barh(top_features, top_values, color=sns.color_palette("crest", len(top_features)))
         axis.set_title("Feature Importance Plot")
+        axis.set_xlabel("Importance score")
+        axis.set_ylabel("Feature")
+        axis.grid(axis="x", linestyle="--", alpha=0.35)
+        for bar in bars:
+            width = bar.get_width()
+            axis.text(width + 0.0005, bar.get_y() + bar.get_height() / 2, f"{width:.3f}", va="center", fontsize=8)
         fig.tight_layout()
         fig.savefig(VISUALS_DIR / "feature_importance.png", dpi=200, bbox_inches="tight")
         plt.close(fig)
