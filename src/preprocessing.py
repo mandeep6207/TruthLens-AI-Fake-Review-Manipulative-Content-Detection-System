@@ -23,6 +23,19 @@ except LookupError:  # pragma: no cover - runtime bootstrap
 
 STEMMER = PorterStemmer()
 STOPWORDS = set(stopwords.words("english"))
+NEGATION_WORDS = {"no", "not", "nor", "never", "without"}
+DOMAIN_STOPWORDS = {
+    "product",
+    "item",
+    "purchase",
+    "review",
+    "buy",
+    "bought",
+    "use",
+    "used",
+    "thing",
+    "things",
+}
 SUSPICIOUS_TERMS = {
     "buy now",
     "limited time",
@@ -81,6 +94,20 @@ def cleanup_review_tokens(text: str) -> str:
     text = re.sub(r"\b\w{1}\b", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
+
+
+def filter_review_tokens(tokens: list[str]) -> list[str]:
+    filtered_tokens = []
+    for token in tokens:
+        if token in NEGATION_WORDS:
+            filtered_tokens.append(token)
+            continue
+        if token in STOPWORDS or token in DOMAIN_STOPWORDS:
+            continue
+        if len(token) <= 1:
+            continue
+        filtered_tokens.append(token)
+    return filtered_tokens
 
 NEUTRAL_PHRASES = [
     "It arrived as expected and does the job.",
@@ -396,7 +423,7 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
 def preprocess_text(text: str) -> str:
     text = normalize_review_text(text)
     text = cleanup_review_tokens(text)
-    tokens = [STEMMER.stem(token) for token in text.split() if token not in STOPWORDS and len(token) > 1]
+    tokens = [STEMMER.stem(token) for token in filter_review_tokens(text.split())]
     return " ".join(tokens)
 
 
