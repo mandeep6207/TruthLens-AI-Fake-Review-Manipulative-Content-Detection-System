@@ -2,31 +2,25 @@
 
 Best model: Logistic Regression
 
-Latest evaluation summary:
-
-- Accuracy: 0.96125
-- Weighted F1: 0.9612478806971159
-- The score range now reflects noisy, overlapping review behavior rather than an unrealistically perfect separation.
-
 ## Model Comparison
 {
   "Logistic Regression": {
-    "accuracy": 0.96125,
-    "precision": 0.9613208753219474,
-    "recall": 0.96125,
-    "weighted_f1": 0.9612478806971159
+    "accuracy": 0.9624060150375939,
+    "precision": 0.9625106022052586,
+    "recall": 0.9624060150375939,
+    "weighted_f1": 0.9624038896426955
   },
   "Multinomial Naive Bayes": {
-    "accuracy": 0.96125,
-    "precision": 0.9613208753219474,
-    "recall": 0.96125,
-    "weighted_f1": 0.9612478806971159
+    "accuracy": 0.9624060150375939,
+    "precision": 0.9625106022052586,
+    "recall": 0.9624060150375939,
+    "weighted_f1": 0.9624038896426955
   },
   "Random Forest Classifier": {
-    "accuracy": 0.96125,
-    "precision": 0.9613208753219474,
-    "recall": 0.96125,
-    "weighted_f1": 0.9612478806971159
+    "accuracy": 0.9624060150375939,
+    "precision": 0.9625106022052586,
+    "recall": 0.9624060150375939,
+    "weighted_f1": 0.9624038896426955
   }
 }
 
@@ -34,4 +28,10 @@ Latest evaluation summary:
 - Fake reviews are intentionally more repetitive, promotional, and exclamation-heavy.
 - Verified purchase status and suspicious word counts are strong behavioral signals.
 - The TF-IDF model captures strong lexical separation between real and fake reviews.
-- A small amount of annotation noise and mixed-signal text helps the benchmark look closer to a real moderation workflow.
+- Class balance check: True
+- Average model confidence: 0.918
+- Cross-validation weighted F1: 0.959 +/- 0.009
+- Misclassified examples: 30
+- Latest regenerated run: 96.24% accuracy and 96.24% weighted F1.
+- Confidence analysis shows the model is usually decisive but still exposes a small uncertain slice.
+- The misclassification report now captures concrete borderline examples for review.

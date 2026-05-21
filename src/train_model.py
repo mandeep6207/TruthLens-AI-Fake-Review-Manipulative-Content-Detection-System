@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy.sparse import csr_matrix, hstack
-from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB

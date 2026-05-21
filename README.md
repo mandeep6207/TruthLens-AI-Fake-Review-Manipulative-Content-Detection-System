@@ -4,7 +4,7 @@
 
 TruthLens AI is an end-to-end NLP and machine learning project that detects fake reviews, manipulative promotional language, spam-like opinion patterns, and suspiciously overhyped customer feedback.
 
-The latest evaluation run lands in a realistic production-style range with roughly 96% accuracy and weighted F1 after introducing noisy, mixed, and ambiguous review cases.
+The latest evaluation run lands in a realistic production-style range with 96.24% accuracy and 96.24% weighted F1 after introducing noisy, mixed, and ambiguous review cases.
 
 ## Project Overview
 
@@ -17,6 +17,7 @@ This repository demonstrates a complete review-authenticity detection pipeline:
 - model benchmarking across three classifiers
 - visual analytics and reporting
 - model serialization and reproducible outputs
+- confidence analysis and misclassification review
 
 ## Architecture
 
@@ -83,6 +84,10 @@ The generated dataset contains these columns:
 - `verified_purchase`
 - `review_length`
 - `sentiment_score`
+- `sentiment_intensity`
+- `sentiment_positive`
+- `sentiment_negative`
+- `sentiment_neutral`
 - `suspicious_word_count`
 - `uppercase_word_count`
 - `exclamation_count`
@@ -95,7 +100,7 @@ The generated dataset contains these columns:
 3. Stopword removal
 4. Whitespace cleanup
 5. Token normalization with stemming
-6. TF-IDF vectorization using up to 3,000 features and bi-grams
+6. TF-IDF vectorization using tuned feature limits and up to tri-grams
 
 ## Model Training
 
@@ -118,8 +123,8 @@ Outputs are written to:
 
 Best observed model performance in the latest run:
 
-- Accuracy: 96.13%
-- Weighted F1: 96.12%
+- Accuracy: 96.24%
+- Weighted F1: 96.24%
 - Best model: Logistic Regression
 
 ## Visualizations

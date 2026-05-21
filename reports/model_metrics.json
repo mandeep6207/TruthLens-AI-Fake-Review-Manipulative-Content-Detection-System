@@ -2,39 +2,63 @@
   "best_model": "Logistic Regression",
   "model_comparison": {
     "Logistic Regression": {
-      "accuracy": 0.96125,
-      "precision": 0.9613208753219474,
-      "recall": 0.96125,
-      "weighted_f1": 0.9612478806971159
+      "accuracy": 0.9624060150375939,
+      "precision": 0.9625106022052586,
+      "recall": 0.9624060150375939,
+      "weighted_f1": 0.9624038896426955
     },
     "Multinomial Naive Bayes": {
-      "accuracy": 0.96125,
-      "precision": 0.9613208753219474,
-      "recall": 0.96125,
-      "weighted_f1": 0.9612478806971159
+      "accuracy": 0.9624060150375939,
+      "precision": 0.9625106022052586,
+      "recall": 0.9624060150375939,
+      "weighted_f1": 0.9624038896426955
     },
     "Random Forest Classifier": {
-      "accuracy": 0.96125,
-      "precision": 0.9613208753219474,
-      "recall": 0.96125,
-      "weighted_f1": 0.9612478806971159
+      "accuracy": 0.9624060150375939,
+      "precision": 0.9625106022052586,
+      "recall": 0.9624060150375939,
+      "weighted_f1": 0.9624038896426955
     }
   },
   "best_model_report": {
-    "accuracy": 0.96125,
-    "precision": 0.9613208753219474,
-    "recall": 0.96125,
-    "weighted_f1": 0.9612478806971159,
-    "classification_report": "              precision    recall  f1-score   support\n\n        Real       0.97      0.95      0.96       399\n        Fake       0.96      0.97      0.96       401\n\n    accuracy                           0.96       800\n   macro avg       0.96      0.96      0.96       800\nweighted avg       0.96      0.96      0.96       800\n",
+    "accuracy": 0.9624060150375939,
+    "precision": 0.9625106022052586,
+    "recall": 0.9624060150375939,
+    "weighted_f1": 0.9624038896426955,
+    "classification_report": "              precision    recall  f1-score   support\n\n        Real       0.96      0.97      0.96       399\n        Fake       0.97      0.95      0.96       399\n\n    accuracy                           0.96       798\n   macro avg       0.96      0.96      0.96       798\nweighted avg       0.96      0.96      0.96       798\n",
     "confusion_matrix": [
       [
-        381,
-        18
+        387,
+        12
       ],
       [
-        13,
-        388
+        18,
+        381
       ]
     ]
-  }
+  },
+  "class_balance_check": {
+    "counts": {
+      "Real": 1994,
+      "Fake": 1994
+    },
+    "ratios": {
+      "Real": 0.5,
+      "Fake": 0.5
+    },
+    "balanced": true
+  },
+  "confidence_summary": {
+    "available": true,
+    "mean_confidence": 0.9183379661536548,
+    "median_confidence": 0.9277105713053967,
+    "low_confidence_share": 0.015037593984962405
+  },
+  "cross_validation_summary": {
+    "accuracy_mean": 0.9589341692789969,
+    "accuracy_std": 0.008607855935890911,
+    "weighted_f1_mean": 0.9589319964829018,
+    "weighted_f1_std": 0.00860777501376487
+  },
+  "misclassified_count": 30
 }
