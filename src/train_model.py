@@ -97,7 +97,20 @@ def generate_visuals(frame: pd.DataFrame, feature_names=None, importances=None) 
 
     numeric_columns = ["rating", "verified_purchase", "review_length", "sentiment_score", "suspicious_word_count", "uppercase_word_count", "exclamation_count"]
     fig, axis = plt.subplots(figsize=(9, 7))
-    sns.heatmap(frame[numeric_columns].corr(), annot=True, cmap="coolwarm", center=0, ax=axis)
+    correlation_matrix = frame[numeric_columns].corr()
+    mask = np.triu(np.ones_like(correlation_matrix, dtype=bool))
+    sns.heatmap(
+        correlation_matrix,
+        mask=mask,
+        annot=True,
+        fmt=".2f",
+        cmap="RdBu_r",
+        center=0,
+        linewidths=0.5,
+        square=True,
+        cbar_kws={"shrink": 0.8},
+        ax=axis,
+    )
     axis.set_title("Correlation Heatmap")
     fig.tight_layout()
     fig.savefig(VISUALS_DIR / "correlation_heatmap.png", dpi=200, bbox_inches="tight")
