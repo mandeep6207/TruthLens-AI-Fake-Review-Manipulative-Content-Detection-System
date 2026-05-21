@@ -63,6 +63,14 @@ def generate_visuals(frame: pd.DataFrame, feature_names=None, importances=None) 
         fig.savefig(VISUALS_DIR / filename, dpi=200, bbox_inches="tight")
         plt.close(fig)
 
+
+def verify_class_balance(frame: pd.DataFrame) -> dict:
+    counts = frame["fake_review"].value_counts().to_dict()
+    total = sum(counts.values())
+    ratio = {label: round(count / total, 4) for label, count in counts.items()}
+    balanced = max(ratio.values()) - min(ratio.values()) <= 0.05
+    return {"counts": counts, "ratios": ratio, "balanced": balanced}
+
     fig, axis = plt.subplots(figsize=(8, 5))
     sns.histplot(data=frame, x="sentiment_score", hue="fake_review", kde=True, bins=40, palette=["#2E86AB", "#D1495B"], ax=axis)
     axis.set_title("Sentiment Distribution")
@@ -133,6 +141,7 @@ def train_and_evaluate():
     dataset = generate_synthetic_reviews()
     dataset.to_csv(DATA_DIR / "reviews_dataset.csv", index=False)
     cleaned = build_clean_dataset()
+    class_balance = verify_class_balance(cleaned)
     generate_visuals(cleaned)
 
     X_train, X_test, y_train, y_test = split_dataset(cleaned)
@@ -204,6 +213,7 @@ def train_and_evaluate():
         "best_model": best_model_name,
         "model_comparison": results,
         "best_model_report": best_metrics,
+        "class_balance_check": class_balance,
     })
 
     report_lines = [
@@ -218,6 +228,7 @@ def train_and_evaluate():
         "- Fake reviews are intentionally more repetitive, promotional, and exclamation-heavy.",
         "- Verified purchase status and suspicious word counts are strong behavioral signals.",
         "- The TF-IDF model captures strong lexical separation between real and fake reviews.",
+        f"- Class balance check: {class_balance['balanced']}",
     ]
     (REPORTS_DIR / "project_report.md").write_text("\n".join(report_lines), encoding="utf-8")
 
