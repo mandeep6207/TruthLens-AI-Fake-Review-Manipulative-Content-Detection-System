@@ -324,6 +324,16 @@ def _sentiment_score(text: str) -> float:
     return float(np.clip(score, -1.0, 1.0))
 
 
+def rebalance_labels(frame: pd.DataFrame, random_state: int) -> pd.DataFrame:
+    label_counts = frame["fake_review"].value_counts()
+    target_count = int(label_counts.min())
+    balanced_frames = []
+    for label in ["Real", "Fake"]:
+        balanced_frames.append(frame[frame["fake_review"] == label].sample(n=target_count, random_state=random_state))
+    balanced = pd.concat(balanced_frames, ignore_index=True)
+    return balanced.sample(frac=1.0, random_state=random_state).reset_index(drop=True)
+
+
 def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_state: int = CONFIG.random_state) -> pd.DataFrame:
     rng = random.Random(random_state)
     np_rng = np.random.default_rng(random_state)
@@ -436,6 +446,7 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
 
     noisy_index = frame.sample(frac=0.04, random_state=random_state + 7).index
     frame.loc[noisy_index, "fake_review"] = frame.loc[noisy_index, "fake_review"].map({"Real": "Fake", "Fake": "Real"})
+    frame = rebalance_labels(frame, random_state)
 
     frame["review_length"] = frame["review_text"].str.split().str.len()
     frame["sentiment_score"] = frame["review_text"].apply(_sentiment_score)
