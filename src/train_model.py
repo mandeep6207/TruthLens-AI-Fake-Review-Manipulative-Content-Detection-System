@@ -183,14 +183,16 @@ def train_and_evaluate():
         "Logistic Regression": LogisticRegression(max_iter=1000, class_weight="balanced", random_state=CONFIG.random_state, C=0.7, solver="liblinear"),
         "Multinomial Naive Bayes": MultinomialNB(alpha=0.7),
         "Random Forest Classifier": RandomForestClassifier(
-            n_estimators=180,
+            n_estimators=220,
             random_state=CONFIG.random_state,
             class_weight="balanced_subsample",
             n_jobs=-1,
-            max_depth=10,
-            min_samples_leaf=6,
-            min_samples_split=10,
+            max_depth=8,
+            min_samples_leaf=8,
+            min_samples_split=12,
             max_features="sqrt",
+            criterion="entropy",
+            bootstrap=True,
         ),
     }
 
@@ -218,14 +220,16 @@ def train_and_evaluate():
     confidence_summary = save_probability_confidence_analysis(best_model, X_test_combined)
 
     rf_model = RandomForestClassifier(
-        n_estimators=180,
+        n_estimators=220,
         random_state=CONFIG.random_state,
         class_weight="balanced_subsample",
         n_jobs=-1,
-        max_depth=10,
-        min_samples_leaf=6,
-        min_samples_split=10,
+        max_depth=8,
+        min_samples_leaf=8,
+        min_samples_split=12,
         max_features="sqrt",
+        criterion="entropy",
+        bootstrap=True,
     )
     rf_model.fit(X_train_combined.toarray(), y_train)
     generate_visuals(cleaned, combined_feature_names, rf_model.feature_importances_)
