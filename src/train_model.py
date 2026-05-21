@@ -63,14 +63,6 @@ def generate_visuals(frame: pd.DataFrame, feature_names=None, importances=None) 
         fig.savefig(VISUALS_DIR / filename, dpi=200, bbox_inches="tight")
         plt.close(fig)
 
-
-def verify_class_balance(frame: pd.DataFrame) -> dict:
-    counts = frame["fake_review"].value_counts().to_dict()
-    total = sum(counts.values())
-    ratio = {label: round(count / total, 4) for label, count in counts.items()}
-    balanced = max(ratio.values()) - min(ratio.values()) <= 0.05
-    return {"counts": counts, "ratios": ratio, "balanced": balanced}
-
     fig, axis = plt.subplots(figsize=(8, 5))
     sns.histplot(data=frame, x="sentiment_score", hue="fake_review", kde=True, bins=40, palette=["#2E86AB", "#D1495B"], ax=axis)
     axis.set_title("Sentiment Distribution")
@@ -123,6 +115,36 @@ def verify_class_balance(frame: pd.DataFrame) -> dict:
     fig.tight_layout()
     fig.savefig(VISUALS_DIR / "correlation_heatmap.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
+
+
+def verify_class_balance(frame: pd.DataFrame) -> dict:
+    counts = frame["fake_review"].value_counts().to_dict()
+    total = sum(counts.values())
+    ratio = {label: round(count / total, 4) for label, count in counts.items()}
+    balanced = max(ratio.values()) - min(ratio.values()) <= 0.05
+    return {"counts": counts, "ratios": ratio, "balanced": balanced}
+
+
+def save_probability_confidence_analysis(model, features) -> dict:
+    if not hasattr(model, "predict_proba"):
+        return {"available": False}
+    probabilities = model.predict_proba(features)
+    max_probabilities = probabilities.max(axis=1)
+    confidence_summary = {
+        "available": True,
+        "mean_confidence": float(np.mean(max_probabilities)),
+        "median_confidence": float(np.median(max_probabilities)),
+        "low_confidence_share": float(np.mean(max_probabilities < 0.75)),
+    }
+    fig, axis = plt.subplots(figsize=(8, 5))
+    sns.histplot(max_probabilities, bins=30, kde=True, color="#2563EB", ax=axis)
+    axis.set_title("Model Probability Confidence")
+    axis.set_xlabel("Maximum predicted class probability")
+    axis.set_ylabel("Review count")
+    fig.tight_layout()
+    fig.savefig(VISUALS_DIR / "model_probability_confidence.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    return confidence_summary
 
     if feature_names is not None and importances is not None:
         top_indices = np.argsort(importances)[-20:]
@@ -193,6 +215,7 @@ def train_and_evaluate():
 
     save_classification_report(best_metrics["classification_report"])
     save_confusion_matrix_plot(best_metrics["confusion_matrix"])
+    confidence_summary = save_probability_confidence_analysis(best_model, X_test_combined)
 
     rf_model = RandomForestClassifier(
         n_estimators=180,
@@ -214,6 +237,7 @@ def train_and_evaluate():
         "model_comparison": results,
         "best_model_report": best_metrics,
         "class_balance_check": class_balance,
+        "confidence_summary": confidence_summary,
     })
 
     report_lines = [
@@ -229,6 +253,7 @@ def train_and_evaluate():
         "- Verified purchase status and suspicious word counts are strong behavioral signals.",
         "- The TF-IDF model captures strong lexical separation between real and fake reviews.",
         f"- Class balance check: {class_balance['balanced']}",
+        f"- Average model confidence: {confidence_summary.get('mean_confidence', 0):.3f}",
     ]
     (REPORTS_DIR / "project_report.md").write_text("\n".join(report_lines), encoding="utf-8")
 
