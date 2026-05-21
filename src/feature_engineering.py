@@ -12,13 +12,7 @@ def split_dataset(frame: pd.DataFrame):
     features = frame[
         [
             "cleaned_review_text",
-        splitter = StratifiedShuffleSplit(n_splits=1, test_size=CONFIG.test_size, random_state=CONFIG.random_state)
-        train_index, test_index = next(splitter.split(features, target))
-        X_train = features.iloc[train_index].reset_index(drop=True)
-        X_test = features.iloc[test_index].reset_index(drop=True)
-        y_train = target.iloc[train_index].reset_index(drop=True)
-        y_test = target.iloc[test_index].reset_index(drop=True)
-        return X_train, X_test, y_train, y_test
+            "rating",
             "verified_purchase",
             "review_length",
             "sentiment_score",
@@ -28,7 +22,13 @@ def split_dataset(frame: pd.DataFrame):
         ]
     ].copy()
     target = frame["fake_review"].map({"Real": 0, "Fake": 1})
-    return train_test_split(features, target, test_size=CONFIG.test_size, random_state=CONFIG.random_state, stratify=target)
+    splitter = StratifiedShuffleSplit(n_splits=1, test_size=CONFIG.test_size, random_state=CONFIG.random_state)
+    train_index, test_index = next(splitter.split(features, target))
+    X_train = features.iloc[train_index].reset_index(drop=True)
+    X_test = features.iloc[test_index].reset_index(drop=True)
+    y_train = target.iloc[train_index].reset_index(drop=True)
+    y_test = target.iloc[test_index].reset_index(drop=True)
+    return X_train, X_test, y_train, y_test
 
 
 def build_vectorizer() -> TfidfVectorizer:

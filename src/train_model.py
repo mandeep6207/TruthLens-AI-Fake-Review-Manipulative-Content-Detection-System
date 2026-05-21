@@ -107,7 +107,7 @@ def train_and_evaluate():
     X_train, X_test, y_train, y_test = split_dataset(cleaned)
     text_train = X_train["cleaned_review_text"].astype(str)
     text_test = X_test["cleaned_review_text"].astype(str)
-    numeric_features = ["rating", "verified_purchase", "review_length", "sentiment_score", "suspicious_word_count", "uppercase_word_count", "exclamation_count"]
+    numeric_features = ["rating", "verified_purchase", "review_length", "sentiment_score", "suspicious_word_count"]
     numeric_train, numeric_test, _ = scale_numeric_features(X_train, X_test, numeric_features)
 
     vectorizer = build_vectorizer()
