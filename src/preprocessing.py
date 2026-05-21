@@ -64,6 +64,15 @@ TYPO_MAP = {
     "service": "servcie",
 }
 
+TOKEN_REPLACEMENTS = {
+    "n't": " not",
+    "'re": " are",
+    "'s": " is",
+    "'m": " am",
+    "'ll": " will",
+    "'ve": " have",
+}
+
 NEUTRAL_PHRASES = [
     "It arrived as expected and does the job.",
     "I have no strong feelings either way.",
@@ -174,6 +183,18 @@ def _shape_text(text: str, rng: random.Random) -> str:
     if rng.random() < 0.14:
         text = _inject_typos(text, rng)
     return text
+
+
+def normalize_review_text(text: str) -> str:
+    normalized = str(text).lower()
+    normalized = normalized.replace("’", "'").replace("‘", "'")
+    normalized = re.sub(r"<[^>]+>", " ", normalized)
+    for source, replacement in TOKEN_REPLACEMENTS.items():
+        normalized = normalized.replace(source, replacement)
+    normalized = re.sub(r"(.)\1{2,}", r"\1\1", normalized)
+    normalized = re.sub(r"[^a-z0-9\s!?.]", " ", normalized)
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    return normalized
 
 
 REAL_OPENERS = [
@@ -364,8 +385,7 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
 
 
 def preprocess_text(text: str) -> str:
-    text = text.lower()
-    text = re.sub(r"[^a-z\s]", " ", text)
+    text = normalize_review_text(text)
     tokens = [STEMMER.stem(token) for token in text.split() if token not in STOPWORDS and len(token) > 1]
     return " ".join(tokens)
 
