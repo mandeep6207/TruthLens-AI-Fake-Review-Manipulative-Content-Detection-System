@@ -18,6 +18,36 @@ This repository demonstrates a complete review-authenticity detection pipeline:
 - visual analytics and reporting
 - model serialization and reproducible outputs
 
+## Architecture
+
+```mermaid
+flowchart LR
+	A[Synthetic Review Generator] --> B[Text Normalization]
+	B --> C[Feature Engineering]
+	C --> D[TF-IDF Vectorization]
+	C --> E[Behavioral Features]
+	D --> F[Model Training]
+	E --> F
+	F --> G[Evaluation & Reports]
+	G --> H[Saved Models and Visuals]
+```
+
+## Workflow
+
+```mermaid
+sequenceDiagram
+	participant U as User/Analyst
+	participant P as Pipeline
+	participant M as ML Models
+	participant R as Reports
+	U->>P: Run training pipeline
+	P->>P: Generate and clean reviews
+	P->>M: Train TF-IDF classifiers
+	M-->>P: Predictions and probabilities
+	P->>R: Save metrics, plots, and reports
+	R-->>U: Portfolio-ready artifacts
+```
+
 ## Problem Statement
 
 Online review platforms are vulnerable to coordinated manipulation, promotional spam, and low-quality synthetic commentary. The goal of this project is to classify reviews as real or fake using both textual and behavioral signals.
