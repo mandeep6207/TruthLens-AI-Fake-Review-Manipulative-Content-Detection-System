@@ -147,6 +147,14 @@ FAKE_PROMO_PHRASES = [
     "I keep recommending it because the value is unbelievable.",
 ]
 
+FAKE_MIXED_SENTIMENT_PHRASES = [
+    "The delivery was slow, but the product is still amazing.",
+    "There are a few odd flaws, yet I would absolutely buy again.",
+    "The packaging was rough, but the item itself feels premium.",
+    "Not everything worked perfectly, although the result is still fantastic.",
+    "Some details were disappointing, but the overall experience was excellent.",
+]
+
 MIXED_PHRASES = [
     "I like parts of it, but the finish could be better.",
     "It is useful, although not quite as amazing as advertised.",
@@ -404,12 +412,14 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
         else:
             text = (
                 f"{opener}. {repeated.lower()} {promo_sentence.lower()} "
-                f"{(sarcasm := rng.choice(SARCASM_SNIPPETS)) if True else ''} buy now for the best deal."
+                f"{rng.choice(FAKE_MIXED_SENTIMENT_PHRASES)} {rng.choice(SARCASM_SNIPPETS)} buy now for the best deal."
             )
         if index % 4 == 0:
             text += " This is still worth it and I would buy again."
         if rng.random() < 0.22:
             text += " maybe it is not perfect, but the promo is real."
+        if rng.random() < 0.2:
+            text += " " + rng.choice(FAKE_MIXED_SENTIMENT_PHRASES)
         if rng.random() < 0.22:
             text += " " + rng.choice(SARCASTIC_FAKE_PHRASES)
         text = _shape_text(text, rng)
