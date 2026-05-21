@@ -73,6 +73,15 @@ TOKEN_REPLACEMENTS = {
     "'ve": " have",
 }
 
+
+def cleanup_review_tokens(text: str) -> str:
+    text = re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"\b(\w)\1{2,}\b", r"\1\1", text)
+    text = re.sub(r"\b(?:lol|lmao|omg|uhh+|hmm+|meh)\b", " ", text)
+    text = re.sub(r"\b\w{1}\b", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
 NEUTRAL_PHRASES = [
     "It arrived as expected and does the job.",
     "I have no strong feelings either way.",
@@ -386,6 +395,7 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
 
 def preprocess_text(text: str) -> str:
     text = normalize_review_text(text)
+    text = cleanup_review_tokens(text)
     tokens = [STEMMER.stem(token) for token in text.split() if token not in STOPWORDS and len(token) > 1]
     return " ".join(tokens)
 
