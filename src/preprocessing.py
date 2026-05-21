@@ -66,6 +66,20 @@ SARCASM_SNIPPETS = [
     "absolutely amazing, if you ignore the obvious issues",
 ]
 
+SARCASTIC_REAL_PHRASES = [
+    "Sure, it is perfect in the same way traffic is relaxing.",
+    "Apparently every product has to be a life changer now.",
+    "The hype was loud, but the item itself was just okay.",
+    "I guess this is what premium means these days.",
+]
+
+SARCASTIC_FAKE_PHRASES = [
+    "Yeah, because nothing says honest review like shouting BUY NOW.",
+    "Totally organic praise, definitely not an ad.",
+    "The miracle product somehow needs one more five-star comment.",
+    "Sure, this was written by a real customer and not a promo script.",
+]
+
 TYPO_MAP = {
     "excellent": "excellant",
     "product": "prodcut",
@@ -346,6 +360,8 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
                 "It almost sounded sponsored in places, though the product was fine.",
                 "A few phrases were too polished for my taste.",
             ])
+        if rng.random() < 0.18:
+            text += " " + rng.choice(SARCASTIC_REAL_PHRASES)
         text = _shape_text(text, rng)
         rating = int(np_rng.choice([1, 2, 3, 4, 5], p=[0.08, 0.15, 0.25, 0.28, 0.24]))
         if profile == "neutral":
@@ -394,6 +410,8 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
             text += " This is still worth it and I would buy again."
         if rng.random() < 0.22:
             text += " maybe it is not perfect, but the promo is real."
+        if rng.random() < 0.22:
+            text += " " + rng.choice(SARCASTIC_FAKE_PHRASES)
         text = _shape_text(text, rng)
         rating = int(np_rng.choice([1, 2, 3, 4, 5], p=[0.1, 0.16, 0.24, 0.26, 0.24]))
         if profile == "realistic":
