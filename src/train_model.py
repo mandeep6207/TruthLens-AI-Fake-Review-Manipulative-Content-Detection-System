@@ -71,6 +71,14 @@ def generate_visuals(frame: pd.DataFrame, feature_names=None, importances=None) 
     plt.close(fig)
 
     fig, axis = plt.subplots(figsize=(8, 5))
+    sns.histplot(data=frame, x="sentiment_intensity", hue="fake_review", kde=True, bins=40, palette=["#0F766E", "#B91C1C"], ax=axis)
+    axis.set_title("Sentiment Intensity Analysis")
+    axis.set_xlabel("VADER compound score")
+    fig.tight_layout()
+    fig.savefig(VISUALS_DIR / "sentiment_intensity_analysis.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    fig, axis = plt.subplots(figsize=(8, 5))
     sns.boxplot(data=frame, x="fake_review", y="review_length", hue="fake_review", palette=["#2E86AB", "#D1495B"], ax=axis, legend=False)
     axis.set_title("Review Length Analysis")
     fig.tight_layout()
@@ -167,8 +175,6 @@ def train_and_evaluate():
     rf_model.fit(X_train_combined.toarray(), y_train)
     generate_visuals(cleaned, combined_feature_names, rf_model.feature_importances_)
 
-    sentiment_analyzer = SentimentIntensityAnalyzer()
-    cleaned["sentiment_score"] = cleaned["review_text"].apply(lambda value: sentiment_analyzer.polarity_scores(str(value))["compound"])
     cleaned.to_csv(DATA_DIR / "cleaned_reviews.csv", index=False)
 
     save_json(REPORTS_DIR / "model_metrics.json", {

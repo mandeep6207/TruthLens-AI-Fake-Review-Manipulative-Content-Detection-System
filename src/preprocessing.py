@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
+from nltk.sentiment import SentimentIntensityAnalyzer
 
 from src.utils import CONFIG, DATA_DIR, ensure_directories
 
@@ -15,14 +16,17 @@ try:
     import nltk
 
     nltk.data.find("corpora/stopwords")
+    nltk.data.find("sentiment/vader_lexicon.zip")
 except LookupError:  # pragma: no cover - runtime bootstrap
     import nltk
 
     nltk.download("stopwords", quiet=True)
+    nltk.download("vader_lexicon", quiet=True)
 
 
 STEMMER = PorterStemmer()
 STOPWORDS = set(stopwords.words("english"))
+SENTIMENT_ANALYZER = SentimentIntensityAnalyzer()
 NEGATION_WORDS = {"no", "not", "nor", "never", "without"}
 DOMAIN_STOPWORDS = {
     "product",
@@ -334,6 +338,16 @@ def rebalance_labels(frame: pd.DataFrame, random_state: int) -> pd.DataFrame:
     return balanced.sample(frac=1.0, random_state=random_state).reset_index(drop=True)
 
 
+def add_sentiment_intensity(frame: pd.DataFrame) -> pd.DataFrame:
+    sentiment_scores = frame["review_text"].astype(str).apply(SENTIMENT_ANALYZER.polarity_scores)
+    frame = frame.copy()
+    frame["sentiment_intensity"] = sentiment_scores.apply(lambda value: value["compound"])
+    frame["sentiment_positive"] = sentiment_scores.apply(lambda value: value["pos"])
+    frame["sentiment_negative"] = sentiment_scores.apply(lambda value: value["neg"])
+    frame["sentiment_neutral"] = sentiment_scores.apply(lambda value: value["neu"])
+    return frame
+
+
 def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_state: int = CONFIG.random_state) -> pd.DataFrame:
     rng = random.Random(random_state)
     np_rng = np.random.default_rng(random_state)
@@ -450,6 +464,7 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
 
     frame["review_length"] = frame["review_text"].str.split().str.len()
     frame["sentiment_score"] = frame["review_text"].apply(_sentiment_score)
+    frame = add_sentiment_intensity(frame)
     frame["suspicious_word_count"] = frame["review_text"].str.lower().apply(lambda value: sum(term in value for term in SUSPICIOUS_TERMS))
     frame["uppercase_word_count"] = frame["review_text"].apply(lambda value: sum(token.isupper() and len(token) > 1 for token in re.findall(r"\b\w+\b", value)))
     frame["exclamation_count"] = frame["review_text"].str.count(r"!")
