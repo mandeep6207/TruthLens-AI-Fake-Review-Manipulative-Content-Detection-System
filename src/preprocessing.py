@@ -167,8 +167,8 @@ def _inject_typos(text: str, rng: random.Random, probability: float = 0.18) -> s
 def _shape_text(text: str, rng: random.Random) -> str:
     if rng.random() < 0.2:
         text = text.replace(".", "")
-    if rng.random() < 0.18:
-        text = text.replace("!", "!!")
+    if rng.random() < 0.22:
+        text = text.rstrip() + rng.choice(["!", "!!", ""])
     if rng.random() < 0.15:
         text = text + " " + rng.choice(SARCASM_SNIPPETS)
     if rng.random() < 0.14:
@@ -252,8 +252,8 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
     fake_count = sample_size // 2
     real_count = sample_size - fake_count
 
-    real_profile_weights = [0.34, 0.2, 0.24, 0.22]
-    fake_profile_weights = [0.31, 0.24, 0.25, 0.2]
+    real_profile_weights = [0.28, 0.26, 0.26, 0.2]
+    fake_profile_weights = [0.24, 0.28, 0.3, 0.18]
 
     for index in range(real_count):
         profile = np_rng.choice(["balanced", "mixed", "neutral", "skeptical"], p=real_profile_weights)
@@ -283,12 +283,18 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
             text += " The finish is decent, and the performance stays consistent."
         if rng.random() < 0.08:
             text += " best ever? not really, just usable."
+        if rng.random() < 0.28:
+            text += " " + rng.choice([
+                "The promo wording felt a little excessive, but the item still worked.",
+                "It almost sounded sponsored in places, though the product was fine.",
+                "A few phrases were too polished for my taste.",
+            ])
         text = _shape_text(text, rng)
-        rating = int(np_rng.choice([1, 2, 3, 4, 5], p=[0.06, 0.12, 0.24, 0.32, 0.26]))
+        rating = int(np_rng.choice([1, 2, 3, 4, 5], p=[0.08, 0.15, 0.25, 0.28, 0.24]))
         if profile == "neutral":
             rating = int(np_rng.choice([2, 3, 4], p=[0.2, 0.5, 0.3]))
-        verified_purchase = int(np_rng.choice([0, 1], p=[0.18, 0.82]))
-        if rng.random() < 0.09:
+        verified_purchase = int(np_rng.choice([0, 1], p=[0.26, 0.74]))
+        if rng.random() < 0.14:
             verified_purchase = 0
         records.append({"review_text": text, "rating": rating, "verified_purchase": verified_purchase, "fake_review": "Real"})
 
@@ -308,8 +314,8 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
         mixed = rng.choice(MIXED_PHRASES)
         if profile == "promo":
             text = (
-                f"{opener}!!! {repeated}. "
-                f"{marketing[0].title()} {marketing[1]} and {marketing[2]} {marketing[3]}! "
+                f"{opener}. {repeated}. "
+                f"{marketing[0].title()} {marketing[1]} and {marketing[2]} {marketing[3]}. "
                 f"{promo_sentence}"
             )
         elif profile == "mixed":
@@ -324,24 +330,28 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
             )
         else:
             text = (
-                f"{opener}!!! {repeated.lower()} {promo_sentence.lower()} "
-                f"{sarcasm if (sarcasm := rng.choice(SARCASM_SNIPPETS)) else ''} BUY NOW for the best deal!!!"
+                f"{opener}. {repeated.lower()} {promo_sentence.lower()} "
+                f"{(sarcasm := rng.choice(SARCASM_SNIPPETS)) if True else ''} buy now for the best deal."
             )
         if index % 4 == 0:
             text += " This is still worth it and I would buy again."
-        if rng.random() < 0.18:
+        if rng.random() < 0.22:
             text += " maybe it is not perfect, but the promo is real."
         text = _shape_text(text, rng)
-        rating = int(np_rng.choice([1, 2, 3, 4, 5], p=[0.08, 0.14, 0.22, 0.28, 0.28]))
+        rating = int(np_rng.choice([1, 2, 3, 4, 5], p=[0.1, 0.16, 0.24, 0.26, 0.24]))
         if profile == "realistic":
             rating = int(np_rng.choice([3, 4, 5], p=[0.26, 0.42, 0.32]))
-        verified_purchase = int(np_rng.choice([0, 1], p=[0.66, 0.34]))
-        if rng.random() < 0.11:
+        verified_purchase = int(np_rng.choice([0, 1], p=[0.57, 0.43]))
+        if rng.random() < 0.12:
             verified_purchase = 1
         records.append({"review_text": text, "rating": rating, "verified_purchase": verified_purchase, "fake_review": "Fake"})
 
     frame = pd.DataFrame.from_records(records)
     frame = frame.sample(frac=1.0, random_state=random_state).reset_index(drop=True)
+
+    noisy_index = frame.sample(frac=0.04, random_state=random_state + 7).index
+    frame.loc[noisy_index, "fake_review"] = frame.loc[noisy_index, "fake_review"].map({"Real": "Fake", "Fake": "Real"})
+
     frame["review_length"] = frame["review_text"].str.split().str.len()
     frame["sentiment_score"] = frame["review_text"].apply(_sentiment_score)
     frame["suspicious_word_count"] = frame["review_text"].str.lower().apply(lambda value: sum(term in value for term in SUSPICIOUS_TERMS))
