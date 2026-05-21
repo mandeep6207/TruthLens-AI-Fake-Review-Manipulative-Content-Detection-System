@@ -15,7 +15,7 @@ from sklearn.naive_bayes import MultinomialNB
 from wordcloud import WordCloud
 
 from src.evaluate_model import evaluate_predictions, save_classification_report, save_confusion_matrix_plot
-from src.feature_engineering import build_vectorizer, split_dataset
+from src.feature_engineering import build_vectorizer, scale_numeric_features, split_dataset
 from src.preprocessing import build_clean_dataset, generate_synthetic_reviews
 from src.utils import CONFIG, DATA_DIR, MODELS_DIR, REPORTS_DIR, VISUALS_DIR, ensure_directories, save_json
 
@@ -108,8 +108,7 @@ def train_and_evaluate():
     text_train = X_train["cleaned_review_text"].astype(str)
     text_test = X_test["cleaned_review_text"].astype(str)
     numeric_features = ["rating", "verified_purchase", "review_length", "sentiment_score", "suspicious_word_count", "uppercase_word_count", "exclamation_count"]
-    numeric_train = X_train[numeric_features].astype(float).to_numpy()
-    numeric_test = X_test[numeric_features].astype(float).to_numpy()
+    numeric_train, numeric_test, _ = scale_numeric_features(X_train, X_test, numeric_features)
 
     vectorizer = build_vectorizer()
     X_train_tfidf = vectorizer.fit_transform(text_train)
@@ -119,9 +118,18 @@ def train_and_evaluate():
     combined_feature_names = list(vectorizer.get_feature_names_out()) + numeric_features
 
     models = {
-        "Logistic Regression": LogisticRegression(max_iter=1000, class_weight="balanced", random_state=CONFIG.random_state),
-        "Multinomial Naive Bayes": MultinomialNB(alpha=0.25),
-        "Random Forest Classifier": RandomForestClassifier(n_estimators=250, random_state=CONFIG.random_state, class_weight="balanced_subsample", n_jobs=-1),
+        "Logistic Regression": LogisticRegression(max_iter=1000, class_weight="balanced", random_state=CONFIG.random_state, C=0.7, solver="liblinear"),
+        "Multinomial Naive Bayes": MultinomialNB(alpha=0.7),
+        "Random Forest Classifier": RandomForestClassifier(
+            n_estimators=180,
+            random_state=CONFIG.random_state,
+            class_weight="balanced_subsample",
+            n_jobs=-1,
+            max_depth=10,
+            min_samples_leaf=6,
+            min_samples_split=10,
+            max_features="sqrt",
+        ),
     }
 
     results = {}
@@ -146,7 +154,16 @@ def train_and_evaluate():
     save_classification_report(best_metrics["classification_report"])
     save_confusion_matrix_plot(best_metrics["confusion_matrix"])
 
-    rf_model = RandomForestClassifier(n_estimators=250, random_state=CONFIG.random_state, class_weight="balanced_subsample", n_jobs=-1)
+    rf_model = RandomForestClassifier(
+        n_estimators=180,
+        random_state=CONFIG.random_state,
+        class_weight="balanced_subsample",
+        n_jobs=-1,
+        max_depth=10,
+        min_samples_leaf=6,
+        min_samples_split=10,
+        max_features="sqrt",
+    )
     rf_model.fit(X_train_combined.toarray(), y_train)
     generate_visuals(cleaned, combined_feature_names, rf_model.feature_importances_)
 

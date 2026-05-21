@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 from src.utils import CONFIG
 
@@ -44,7 +44,7 @@ def build_vectorizer() -> TfidfVectorizer:
 
 
 def scale_numeric_features(train_frame: pd.DataFrame, test_frame: pd.DataFrame, columns: list[str]):
-    scaler = StandardScaler()
+    scaler = MinMaxScaler()
     train_scaled = scaler.fit_transform(train_frame[columns].astype(float))
     test_scaled = scaler.transform(test_frame[columns].astype(float))
     return train_scaled, test_scaled, scaler
