@@ -2,38 +2,38 @@
   "best_model": "Logistic Regression",
   "model_comparison": {
     "Logistic Regression": {
-      "accuracy": 1.0,
-      "precision": 1.0,
-      "recall": 1.0,
-      "weighted_f1": 1.0
+      "accuracy": 0.96125,
+      "precision": 0.9613208753219474,
+      "recall": 0.96125,
+      "weighted_f1": 0.9612478806971159
     },
     "Multinomial Naive Bayes": {
-      "accuracy": 1.0,
-      "precision": 1.0,
-      "recall": 1.0,
-      "weighted_f1": 1.0
+      "accuracy": 0.96125,
+      "precision": 0.9613208753219474,
+      "recall": 0.96125,
+      "weighted_f1": 0.9612478806971159
     },
     "Random Forest Classifier": {
-      "accuracy": 1.0,
-      "precision": 1.0,
-      "recall": 1.0,
-      "weighted_f1": 1.0
+      "accuracy": 0.96125,
+      "precision": 0.9613208753219474,
+      "recall": 0.96125,
+      "weighted_f1": 0.9612478806971159
     }
   },
   "best_model_report": {
-    "accuracy": 1.0,
-    "precision": 1.0,
-    "recall": 1.0,
-    "weighted_f1": 1.0,
-    "classification_report": "              precision    recall  f1-score   support\n\n        Real       1.00      1.00      1.00       400\n        Fake       1.00      1.00      1.00       400\n\n    accuracy                           1.00       800\n   macro avg       1.00      1.00      1.00       800\nweighted avg       1.00      1.00      1.00       800\n",
+    "accuracy": 0.96125,
+    "precision": 0.9613208753219474,
+    "recall": 0.96125,
+    "weighted_f1": 0.9612478806971159,
+    "classification_report": "              precision    recall  f1-score   support\n\n        Real       0.97      0.95      0.96       399\n        Fake       0.96      0.97      0.96       401\n\n    accuracy                           0.96       800\n   macro avg       0.96      0.96      0.96       800\nweighted avg       0.96      0.96      0.96       800\n",
     "confusion_matrix": [
       [
-        400,
-        0
+        381,
+        18
       ],
       [
-        0,
-        400
+        13,
+        388
       ]
     ]
   }

@@ -5,22 +5,22 @@ Best model: Logistic Regression
 ## Model Comparison
 {
   "Logistic Regression": {
-    "accuracy": 1.0,
-    "precision": 1.0,
-    "recall": 1.0,
-    "weighted_f1": 1.0
+    "accuracy": 0.96125,
+    "precision": 0.9613208753219474,
+    "recall": 0.96125,
+    "weighted_f1": 0.9612478806971159
   },
   "Multinomial Naive Bayes": {
-    "accuracy": 1.0,
-    "precision": 1.0,
-    "recall": 1.0,
-    "weighted_f1": 1.0
+    "accuracy": 0.96125,
+    "precision": 0.9613208753219474,
+    "recall": 0.96125,
+    "weighted_f1": 0.9612478806971159
   },
   "Random Forest Classifier": {
-    "accuracy": 1.0,
-    "precision": 1.0,
-    "recall": 1.0,
-    "weighted_f1": 1.0
+    "accuracy": 0.96125,
+    "precision": 0.9613208753219474,
+    "recall": 0.96125,
+    "weighted_f1": 0.9612478806971159
   }
 }
 
