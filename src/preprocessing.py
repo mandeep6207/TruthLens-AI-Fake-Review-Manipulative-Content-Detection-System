@@ -45,6 +45,136 @@ SUSPICIOUS_TERMS = {
     "top quality",
 }
 
+SARCASM_SNIPPETS = [
+    "yeah, because everything is always perfect",
+    "sure, this is the miracle product everyone talks about",
+    "totally not overhyped at all",
+    "what a surprise, it is actually decent",
+    "absolutely amazing, if you ignore the obvious issues",
+]
+
+TYPO_MAP = {
+    "excellent": "excellant",
+    "product": "prodcut",
+    "quality": "quailty",
+    "recommend": "reccomend",
+    "battery": "battrey",
+    "delivery": "delievery",
+    "amazing": "amazng",
+    "service": "servcie",
+}
+
+NEUTRAL_PHRASES = [
+    "It arrived as expected and does the job.",
+    "I have no strong feelings either way.",
+    "The experience was fine overall.",
+    "Nothing major stood out during use.",
+    "It is a standard product with a few trade-offs.",
+]
+
+REAL_DETAIL_PHRASES = [
+    "The packaging was ordinary but acceptable.",
+    "Setup took a few minutes longer than I expected.",
+    "It works well for everyday use and feels reasonably sturdy.",
+    "I noticed a couple of small quirks, but nothing deal-breaking.",
+    "The value is decent even though it is not the cheapest option.",
+]
+
+FAKE_PROMO_PHRASES = [
+    "This is the best deal I have seen this year.",
+    "I would definitely tell everyone to buy it now.",
+    "The product feels premium and absolutely worth the hype.",
+    "It is a must-have if you want instant results.",
+    "I keep recommending it because the value is unbelievable.",
+]
+
+MIXED_PHRASES = [
+    "I like parts of it, but the finish could be better.",
+    "It is useful, although not quite as amazing as advertised.",
+    "The core idea works, but the details are a bit messy.",
+    "I would rate it higher if the instructions were clearer.",
+    "There is a good product here, just not a perfect one.",
+]
+
+REAL_OPENERS = [
+    "I bought this last month and",
+    "After a few weeks of use,",
+    "My experience has been",
+    "I have used this product for",
+    "For the price, this item is",
+    "The delivery was on time and",
+    "I wanted something reliable and",
+    "This has been part of my daily routine and",
+]
+
+FAKE_OPENERS = [
+    "Absolutely perfect",
+    "Best purchase ever",
+    "This product is unbelievable",
+    "I am obsessed with this item",
+    "Five stars all the way",
+    "Must buy now",
+    "This changed everything",
+    "Superb deal",
+]
+
+REAL_ADJECTIVES = [
+    "useful",
+    "solid",
+    "practical",
+    "fair",
+    "consistent",
+    "comfortable",
+    "noticeable",
+    "efficient",
+    "simple",
+    "balanced",
+    "mixed",
+    "average",
+]
+
+FAKE_MARKETING = [
+    "limited time offer",
+    "best ever",
+    "highly recommend",
+    "buy now",
+    "life changing",
+    "top quality",
+    "five stars",
+    "must have",
+    "incredible",
+    "discount",
+    "promo",
+    "sponsored",
+    "unbelievable",
+    "fantastic",
+    "worth the hype",
+]
+
+
+def _inject_typos(text: str, rng: random.Random, probability: float = 0.18) -> str:
+    mutated = text
+    for source, replacement in TYPO_MAP.items():
+        if source in mutated.lower() and rng.random() < probability:
+            mutated = re.sub(source, replacement, mutated, flags=re.IGNORECASE)
+    if rng.random() < 0.12:
+        mutated = mutated.replace("ing ", "in ")
+    if rng.random() < 0.1:
+        mutated = mutated.replace(" and ", " & ")
+    return mutated
+
+
+def _shape_text(text: str, rng: random.Random) -> str:
+    if rng.random() < 0.2:
+        text = text.replace(".", "")
+    if rng.random() < 0.18:
+        text = text.replace("!", "!!")
+    if rng.random() < 0.15:
+        text = text + " " + rng.choice(SARCASM_SNIPPETS)
+    if rng.random() < 0.14:
+        text = _inject_typos(text, rng)
+    return text
+
 
 REAL_OPENERS = [
     "I bought this last month and",
@@ -109,8 +239,8 @@ FAKE_MARKETING = [
 
 
 def _sentiment_score(text: str) -> float:
-    positive_hits = sum(term in text.lower() for term in ["good", "great", "excellent", "love", "reliable", "useful", "solid", "comfortable"])
-    negative_hits = sum(term in text.lower() for term in ["bad", "poor", "broken", "slow", "issue", "problem", "frustrating", "cheap"])
+    positive_hits = sum(term in text.lower() for term in ["good", "great", "excellent", "love", "reliable", "useful", "solid", "comfortable", "premium", "worth"])
+    negative_hits = sum(term in text.lower() for term in ["bad", "poor", "broken", "slow", "issue", "problem", "frustrating", "cheap", "messy", "awkward"])
     score = (positive_hits - negative_hits) / max(len(text.split()), 1)
     return float(np.clip(score, -1.0, 1.0))
 
@@ -122,42 +252,92 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
     fake_count = sample_size // 2
     real_count = sample_size - fake_count
 
+    real_profile_weights = [0.34, 0.2, 0.24, 0.22]
+    fake_profile_weights = [0.31, 0.24, 0.25, 0.2]
+
     for index in range(real_count):
+        profile = np_rng.choice(["balanced", "mixed", "neutral", "skeptical"], p=real_profile_weights)
         opener = rng.choice(REAL_OPENERS)
         adjective = rng.choice(REAL_ADJECTIVES)
-        limitation = rng.choice(REAL_LIMITATIONS)
-        sentiment_tail = rng.choice([
+        detail = rng.choice(REAL_DETAIL_PHRASES)
+        neutral = rng.choice(NEUTRAL_PHRASES)
+        mixed = rng.choice(MIXED_PHRASES)
+        sarcasm = rng.choice(SARCASM_SNIPPETS)
+        support_phrase = rng.choice([
             "I would still recommend it for everyday use.",
             "Overall it feels dependable and practical.",
             "It does what I need without much fuss.",
             "I would buy it again if I needed another one.",
             "The value is decent for the price point.",
+            "It is okay, but the hype is a little much.",
         ])
-        text = f"{opener} {adjective} overall. {limitation}. {sentiment_tail}"
-        if index % 4 == 0:
-            text += " The finish is decent and the performance stays consistent."
-        rating = int(np_rng.choice([3, 4, 5], p=[0.18, 0.42, 0.40]))
-        verified_purchase = int(np_rng.choice([0, 1], p=[0.08, 0.92]))
+        if profile == "balanced":
+            text = f"{opener} {adjective} overall. {detail} {support_phrase}"
+        elif profile == "mixed":
+            text = f"{opener} {adjective} overall, though {mixed.lower()} {detail} {support_phrase}"
+        elif profile == "neutral":
+            text = f"{opener} {neutral.lower()} {detail} {support_phrase}"
+        else:
+            text = f"{opener} {adjective} at first, but {mixed.lower()} {neutral.lower()} {sarcasm}. {support_phrase}"
+        if index % 5 == 0:
+            text += " The finish is decent, and the performance stays consistent."
+        if rng.random() < 0.08:
+            text += " best ever? not really, just usable."
+        text = _shape_text(text, rng)
+        rating = int(np_rng.choice([1, 2, 3, 4, 5], p=[0.06, 0.12, 0.24, 0.32, 0.26]))
+        if profile == "neutral":
+            rating = int(np_rng.choice([2, 3, 4], p=[0.2, 0.5, 0.3]))
+        verified_purchase = int(np_rng.choice([0, 1], p=[0.18, 0.82]))
+        if rng.random() < 0.09:
+            verified_purchase = 0
         records.append({"review_text": text, "rating": rating, "verified_purchase": verified_purchase, "fake_review": "Real"})
 
     for index in range(fake_count):
+        profile = np_rng.choice(["promo", "mixed", "realistic", "spammy"], p=fake_profile_weights)
         opener = rng.choice(FAKE_OPENERS)
         marketing = rng.sample(FAKE_MARKETING, k=4)
         repeated = rng.choice([
-            "Amazing amazing amazing product",
-            "Perfect perfect perfect quality",
-            "Best best best ever",
-            "Absolutely incredible and fantastic",
+            "Amazing product with great results",
+            "Perfect quality and excellent value",
+            "Best choice I have made in a while",
+            "Absolutely incredible and surprisingly useful",
         ])
-        text = (
-            f"{opener} {repeated}. "
-            f"{marketing[0].title()} {marketing[1]} and {marketing[2]} {marketing[3]}! "
-            "This is the most fantastic purchase I have ever made and I highly recommend it to everyone."
-        )
-        if index % 3 == 0:
-            text += " BUY NOW if you want the best deal!!!"
-        rating = int(np_rng.choice([1, 4, 5], p=[0.06, 0.28, 0.66]))
-        verified_purchase = int(np_rng.choice([0, 1], p=[0.82, 0.18]))
+        promo_sentence = rng.choice(FAKE_PROMO_PHRASES)
+        realistic_sentence = rng.choice(REAL_DETAIL_PHRASES)
+        neutral = rng.choice(NEUTRAL_PHRASES)
+        mixed = rng.choice(MIXED_PHRASES)
+        if profile == "promo":
+            text = (
+                f"{opener}!!! {repeated}. "
+                f"{marketing[0].title()} {marketing[1]} and {marketing[2]} {marketing[3]}! "
+                f"{promo_sentence}"
+            )
+        elif profile == "mixed":
+            text = (
+                f"{opener}, but {mixed.lower()} {promo_sentence.lower()} "
+                f"{realistic_sentence} {marketing[0]} if you want value."
+            )
+        elif profile == "realistic":
+            text = (
+                f"{opener}. {realistic_sentence} {neutral.lower()} "
+                f"Still, I would highly recommend it for most people."
+            )
+        else:
+            text = (
+                f"{opener}!!! {repeated.lower()} {promo_sentence.lower()} "
+                f"{sarcasm if (sarcasm := rng.choice(SARCASM_SNIPPETS)) else ''} BUY NOW for the best deal!!!"
+            )
+        if index % 4 == 0:
+            text += " This is still worth it and I would buy again."
+        if rng.random() < 0.18:
+            text += " maybe it is not perfect, but the promo is real."
+        text = _shape_text(text, rng)
+        rating = int(np_rng.choice([1, 2, 3, 4, 5], p=[0.08, 0.14, 0.22, 0.28, 0.28]))
+        if profile == "realistic":
+            rating = int(np_rng.choice([3, 4, 5], p=[0.26, 0.42, 0.32]))
+        verified_purchase = int(np_rng.choice([0, 1], p=[0.66, 0.34]))
+        if rng.random() < 0.11:
+            verified_purchase = 1
         records.append({"review_text": text, "rating": rating, "verified_purchase": verified_purchase, "fake_review": "Fake"})
 
     frame = pd.DataFrame.from_records(records)
@@ -167,6 +347,9 @@ def generate_synthetic_reviews(sample_size: int = CONFIG.sample_size, random_sta
     frame["suspicious_word_count"] = frame["review_text"].str.lower().apply(lambda value: sum(term in value for term in SUSPICIOUS_TERMS))
     frame["uppercase_word_count"] = frame["review_text"].apply(lambda value: sum(token.isupper() and len(token) > 1 for token in re.findall(r"\b\w+\b", value)))
     frame["exclamation_count"] = frame["review_text"].str.count(r"!")
+    frame["suspicious_word_count"] = frame["suspicious_word_count"].clip(upper=5)
+    frame["uppercase_word_count"] = frame["uppercase_word_count"].clip(upper=4)
+    frame["exclamation_count"] = frame["exclamation_count"].clip(upper=8)
     return frame
 
 
