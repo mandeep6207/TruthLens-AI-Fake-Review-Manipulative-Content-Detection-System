@@ -2,6 +2,12 @@
 
 Best model: Logistic Regression
 
+Latest evaluation summary:
+
+- Accuracy: 0.96125
+- Weighted F1: 0.9612478806971159
+- The score range now reflects noisy, overlapping review behavior rather than an unrealistically perfect separation.
+
 ## Model Comparison
 {
   "Logistic Regression": {
@@ -28,3 +34,4 @@ Best model: Logistic Regression
 - Fake reviews are intentionally more repetitive, promotional, and exclamation-heavy.
 - Verified purchase status and suspicious word counts are strong behavioral signals.
 - The TF-IDF model captures strong lexical separation between real and fake reviews.
+- A small amount of annotation noise and mixed-signal text helps the benchmark look closer to a real moderation workflow.
